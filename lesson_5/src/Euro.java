@@ -7,7 +7,7 @@ public class Euro implements Currency {
         float in_euro = ballance + value/ kantor.euroToRate(currency);
         return new Euro(in_euro);
     }
-    public Currency subtractedCurrency(float value, String currency){
+    public Euro subtractedCurrency(float value, String currency){
         float in_euro = ballance - value/ kantor.euroToRate(currency);
         return new Euro(in_euro);
     }

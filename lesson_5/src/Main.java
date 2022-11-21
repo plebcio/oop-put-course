@@ -12,7 +12,5 @@ public class Main {
         System.out.println(konto.balance() + konto.symbol());
 
 
-
-
     }
 }

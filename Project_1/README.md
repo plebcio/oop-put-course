@@ -1,6 +1,8 @@
 # Calculator in Java
 
 For my first project I implemented a command line calcuator in Java  
+Using the Shunning Yard algorithm  
+
 ### What it can do 
 - Evaluate simple expression with typical binary operators: +, -, *, /, ^   
 

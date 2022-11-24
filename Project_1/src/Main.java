@@ -18,10 +18,10 @@ public class Main {
 //            System.out.println(t);
 //        }
 
-        //parsing
-        SYParser parser = new SYParser(tokens);
+        //parsing`
+        SYExpression expr = new SYExpression(tokens);
         try {
-            parser.parse();
+            expr.parse();
         }
         catch (Exception e){
             System.out.println(e.getMessage());
@@ -32,7 +32,7 @@ public class Main {
         double value;
         // evaluation
         try {
-            value = parser.evaluate();
+            value = expr.evaluate();
         }
         catch (Exception e){
             System.out.println(e.getMessage());

@@ -1,16 +1,15 @@
-import javax.xml.validation.Validator;
 import java.util.*;
 import java.lang.Math;
 
 // parser and evaluator implemented using the Shunning Yard Algorithm
-public class SYParser implements Parser {
+public class SYExpression implements Expression {
 
     final private List<Token> infix;
     final private List<Token> postfix;
 
     final private Set<String> functions = new HashSet<>();
 
-    public SYParser(List<Token> tokens){
+    public SYExpression(List<Token> tokens){
         infix = tokens;
         postfix = new ArrayList<>();
 

@@ -5,11 +5,13 @@ public class Main {
         System.out.println(p1.min());
         System.out.println(p1.avg());
 
-        Logarithm loger = new Logarithm(3, 9);
+        Logarithm loger;
         try {
+            loger = new Logarithm(-3, 9);
             System.out.println(loger.doubleValue());
         } catch (Exception ex){
             System.out.println(ex.getMessage());
+            return;
         }
     }
 }

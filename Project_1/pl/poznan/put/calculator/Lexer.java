@@ -1,7 +1,9 @@
+package pl.poznan.put.calculator;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class Lexer implements LexerInterface{
+public class Lexer implements LexerInterface {
     private final String source;
     private final List<Token> tokens = new ArrayList<>();
 
@@ -20,6 +22,7 @@ public class Lexer implements LexerInterface{
         }
         return tokens;
     }
+
 
     private void scanToken(){
         char c = advance();
@@ -43,13 +46,13 @@ public class Lexer implements LexerInterface{
             case '(' : addToken(TokenType.L_PAREN); break;
             case ')' : addToken(TokenType.R_PAREN); break;
 
-            // numbers and functions
+            // numbers   and functions
             default:
                 if (Character.isDigit(c)){
                     number();
                 }
                 else {
-                    function();
+                    identifier();
                 }
         }
     }
@@ -79,12 +82,19 @@ public class Lexer implements LexerInterface{
         addToken(TokenType.NUM);
     }
 
-    private void function(){
+    private void identifier(){
         while (Character.isLetter(peek())){
             advance();
         }
-        // error catching left to runtime evaluator
-        addToken(TokenType.FUNC);
+        // special case for non-function identifiers
+        String identifier = source.substring(start, current);
+        switch (identifier) {
+            case "ans" -> addToken(TokenType.ANS);
+            case "e", "pi" -> addToken(TokenType.CONST);
+            case "$" -> addToken(TokenType.ARG);
+            // error catching left to runtime evaluator
+            default -> addToken(TokenType.FUNC);
+        }
     }
 
     private char peek(){

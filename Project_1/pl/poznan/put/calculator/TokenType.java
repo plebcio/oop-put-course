@@ -1,3 +1,5 @@
+package pl.poznan.put.calculator;
+
 public enum TokenType {
     NONE, // helper for lack of token
     NEG, // unary negation
@@ -9,7 +11,10 @@ public enum TokenType {
     L_PAREN,
     R_PAREN,
     FUNC,
-    NUM;
+    NUM,
+    ANS,
+    CONST,
+    ARG;
 
     @Override
     public String toString() {

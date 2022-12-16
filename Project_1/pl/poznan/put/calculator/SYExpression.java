@@ -1,22 +1,24 @@
+package pl.poznan.put.calculator;
+
+import pl.poznan.put.calculator.Expression;
+import pl.poznan.put.calculator.Token;
+
 import java.util.*;
 import java.lang.Math;
 
 // parser and evaluator implemented using the Shunning Yard Algorithm
-public class SYParser implements Parser{
+public class SYExpression implements Expression {
 
-    public boolean hadError;
-    private String errorStr = "";
+    private final double previousAns;
     final private List<Token> infix;
     final private List<Token> postfix;
-    final private Stack<Token> stack;
 
     final private Set<String> functions = new HashSet<>();
 
-    public SYParser(List<Token> tokens){
+    public SYExpression(List<Token> tokens, double previousAns){
+        this.previousAns = previousAns;
         infix = tokens;
         postfix = new ArrayList<>();
-        stack = new Stack<>();
-        hadError = false;
 
         functions.add("sin");
         functions.add("cos");
@@ -25,45 +27,47 @@ public class SYParser implements Parser{
     }
 
     @Override
-    public void parse(){
+    public void parse() throws Exception {
+        // initialise stack for operators
+        Stack<Token> tokenStack = new Stack<>();
+
+        // Shunning yard parsing algorithm
         for (int i = 0; i < infix.toArray().length; i++){
             Token currToken = infix.get(i);
             switch (currToken.type()) {
-                case NUM -> postfix.add(currToken);
-                case L_PAREN -> stack.push(currToken);
+                case NUM, CONST, ANS -> postfix.add(currToken);
+                case L_PAREN -> tokenStack.push(currToken);
                 case R_PAREN -> {
                     // pop elements of the stack until '(' is found
-                    while (!stack.isEmpty() && stack.peek().type() != TokenType.L_PAREN) {
+                    while (!tokenStack.isEmpty() && tokenStack.peek().type() != TokenType.L_PAREN) {
                         // add popped element to output list
-                        postfix.add(stack.pop());
+                        postfix.add(tokenStack.pop());
                     }
-                    stack.pop(); // pop the '('
+                    tokenStack.pop(); // pop the '('
                 }
 
                 // handle binary operators and functions
                 default -> {
-                    while (!stack.isEmpty()
-                            && getPrecedence(currToken.type()) <= getPrecedence(stack.peek().type())
-                            && isLeftAssoviative(currToken.type())) {
-                        postfix.add(stack.pop());
+                    while (!tokenStack.isEmpty()
+                            && getPrecedence(currToken.type()) <= getPrecedence(tokenStack.peek().type())
+                            && isLeftAssociative(currToken.type())) {
+                        postfix.add(tokenStack.pop());
                     }
-                    stack.push(currToken);
+                    tokenStack.push(currToken);
                 }
             }
         }
-        // pop the rest of the stack into postfix
-        while (!stack.isEmpty()) {
-            if (stack.peek().type() == TokenType.L_PAREN) {
-                hadError = true;
-                errorStr = "Mismatching parenthesis";
-                return;
+        // pop the rest of the stack into postfix list
+        while (!tokenStack.isEmpty()) {
+            if (tokenStack.peek().type() == TokenType.L_PAREN) {
+                throw new Exception("Syntax error: Missing '('. ");
             }
-            postfix.add(stack.pop());
+            postfix.add(tokenStack.pop());
         }
     }
     
     @Override
-    public double evaluate(){
+    public double evaluate() throws Exception {
         Stack<Double> valueStack = new Stack<>();
 
         for (int i = 0; i < postfix.toArray().length; i++){
@@ -82,14 +86,12 @@ public class SYParser implements Parser{
                     }
                     catch(NumberFormatException e)
                     {
-                        setError("Expected number but got " + currToken.value());
-                        return Double.NaN;
+                        throw new Exception("Syntax error: Expected number but got " + currToken.value());
                     }
                 }
                 case ADD -> {
                     if (valueStack.size() < 2) {
-                        setError("Missing operand(s) for '+' ");
-                        return Double.NaN;
+                        throw new Exception("Syntax error: Missing operand(s) for '+' ");
                     }
                     double b = valueStack.pop();
                     double a = valueStack.pop();
@@ -97,8 +99,7 @@ public class SYParser implements Parser{
                 }
                 case SUB -> {
                     if (valueStack.size() < 2) {
-                        setError("Missing operand(s) for '-' ");
-                        return Double.NaN;
+                        throw new Exception("Syntax error: Missing operand(s) for '-' ");
                     }
                     double b = valueStack.pop();
                     double a = valueStack.pop();
@@ -106,8 +107,7 @@ public class SYParser implements Parser{
                 }
                 case MUL -> {
                     if (valueStack.size() < 2) {
-                        setError("Missing operand(s) for '*' ");
-                        return Double.NaN;
+                        throw new Exception("Syntax error: Missing operand(s) for '*' ");
                     }
                     double b = valueStack.pop();
                     double a = valueStack.pop();
@@ -115,23 +115,20 @@ public class SYParser implements Parser{
                 }
                 case DIV -> {
                     if (valueStack.size() < 2) {
-                        setError("Missing operand(s) for '/' ");
-                        return Double.NaN;
+                        throw new Exception("Syntax error: Missing operand(s) for '/' ");
                     }
                     double b = valueStack.pop();
                     double a = valueStack.pop();
 
                     if (b == 0){
-                        setError("Tried to divide by 0");
-                        return Double.NaN;
+                        throw new Exception("Math error: Division by 0");
                     }
 
                     valueStack.push(a/b);
                 }
                 case EXP -> {
                     if (valueStack.size() < 2) {
-                        setError("Missing operand(s) for '^' ");
-                        return Double.NaN;
+                        throw new Exception("Syntax error: Missing operand(s) for '^' ");
                     }
                     double b = valueStack.pop();
                     double a = valueStack.pop();
@@ -141,8 +138,7 @@ public class SYParser implements Parser{
                     if (functions.contains(currToken.value())){
 
                         if (valueStack.size() < 1) {
-                            setError("Missing operand for func " + currToken.value());
-                            return Double.NaN;
+                            throw new Exception("Syntax error: Missing operand for func " + currToken.value());
                         }
 
                         double a = valueStack.pop();
@@ -152,10 +148,22 @@ public class SYParser implements Parser{
                             case "ln" -> valueStack.push(Math.log(a));
                             case "exp" -> valueStack.push(Math.exp(a));
                         }
+                        // check for illegal arguments eg ln(-7) returns NaN
+                        if (Double.isNaN(valueStack.peek())){
+                            throw new Exception("Math error: Illegal argument for '" + currToken.value() + "'");
+                        }
                     }
                     else {
-                        setError("Unknown symbol " + currToken.value());
-                        return Double.NaN;
+                        throw new Exception("Syntax error: Unknown symbol " + currToken.value());
+                    }
+                }
+                case ANS -> {
+                    valueStack.push(previousAns);
+                }
+                case CONST -> {
+                    switch (currToken.value()) {
+                        case "pi" -> valueStack.push(Math.PI);
+                        case "e" -> valueStack.push(Math.E);
                     }
                 }
             }
@@ -163,17 +171,7 @@ public class SYParser implements Parser{
         return valueStack.pop();
     }
 
-    @Override
-    public boolean hadError(){
-        return hadError;
-    }
-
-    @Override
-    public String errorMsg(){
-        return errorStr;
-    }
-    
-    private boolean isLeftAssoviative(TokenType type){
+    private boolean isLeftAssociative(TokenType type){
         return type == TokenType.ADD || type == TokenType.SUB
                 || type == TokenType.MUL || type == TokenType.DIV;
 
@@ -189,10 +187,5 @@ public class SYParser implements Parser{
             case NEG -> 5;
             default -> -1; // shouldn't happen
         };
-    }
-
-    private void setError(String Msg){
-        this.hadError = true;
-        errorStr = Msg;
     }
 }

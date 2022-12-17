@@ -1,13 +1,11 @@
 package pl.poznan.put.calculator;
 
-import pl.poznan.put.calculator.Calculator;
-
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class CalculatorMenu implements Menu {
 
-    final private Calculator calculator;
+    final private SYCalculator calculator;
     final private Scanner reader;
 
     @Override
@@ -62,7 +60,7 @@ public class CalculatorMenu implements Menu {
         }
     }
 
-    public CalculatorMenu(Calculator calc, Scanner reader){
+    public CalculatorMenu(SYCalculator calc, Scanner reader){
         this.calculator = calc;
         this.reader = reader;
     }

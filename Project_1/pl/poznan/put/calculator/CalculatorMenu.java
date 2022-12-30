@@ -23,7 +23,7 @@ public class CalculatorMenu implements Menu {
     public void runLoop(){
         while (true) {
             // get input
-            System.out.println("\nEnter expression to evaluate: ");
+            System.out.println("\nEnter expression to evaluation: ");
             System.out.print("> ");
             String input = reader.nextLine();
 

@@ -25,7 +25,7 @@ public class SYCalculator implements Calculator{
 
         double expression_value;
         try {
-            expression_value = expression.evaluate();
+            expression_value = expression.evaluation();
         }
         catch (Exception ex){
             throw ex;

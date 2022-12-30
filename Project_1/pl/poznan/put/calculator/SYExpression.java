@@ -67,7 +67,7 @@ public class SYExpression implements Expression {
     }
     
     @Override
-    public double evaluate() throws Exception {
+    public double evaluation() throws Exception {
         Stack<Double> valueStack = new Stack<>();
 
         for (int i = 0; i < postfix.toArray().length; i++){

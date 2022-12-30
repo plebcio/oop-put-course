@@ -7,3 +7,4 @@ public record Token(TokenType type, String value) {
         return type.toString() + " " + value;
     }
 }
+
